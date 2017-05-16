@@ -64,7 +64,7 @@ int mount_fs(char *disk_name){
 
     block_read(0,tmp);
     if(tmp[0] != '1'){
-        perror("did not make file system\n");
+        //perror("did not make file system\n");
         return -1;
     }
 
@@ -152,16 +152,16 @@ int fs_create(char *name){
         name_length++;
     }
     if(name_length>4){
-        perror("Cannot create file, file name too long\n");
+        //perror("Cannot create file, file name too long\n");
         return -1;
     }
     if(file_count>=8){
-        perror("Cannot create file, file more than 8\n");
+        //perror("Cannot create file, file more than 8\n");
         return -1;
     }
     for(i=0; i<MAX_FILE_NUM; i++){
         if(directory_list[i].status==1 && strcmp(directory_list[i].file_name,name)==0){
-            perror("Cannot create file,,file exists\n");
+            //perror("Cannot create file,,file exists\n");
             return -1;
         }
     }
@@ -197,12 +197,12 @@ int fs_delete(char *name){
         }
     }
     if(cur_dir_num==-1){
-        perror("Cannot delete file, it doesn't exist\n");
+        //perror("Cannot delete file, it doesn't exist\n");
         return -1;
     }
     for(i=0; i<MAX_OPEN_FILE_NUM; i++){
         if(oft[i].status==1 && oft[i].directory_node_no==cur_dir_num){
-            perror("Cannot delete file, it's openning\n");
+            //perror("Cannot delete file, it's openning\n");
             return -1;
         }
     }
@@ -223,7 +223,7 @@ int fs_delete(char *name){
 int fs_open(char *name){
     int i,cur_dir_num=-1;
     if(file_open_count>=4){
-        perror("Cannot open file, maximum open file count\n");
+        //perror("Cannot open file, maximum open file count\n");
         return -1;
     }
     for(i=0; i<MAX_FILE_NUM; i++){
@@ -233,12 +233,12 @@ int fs_open(char *name){
         }
     }
     if(cur_dir_num==-1){
-        perror("Cannot open file, it doesn't exist\n");
+        //perror("Cannot open file, it doesn't exist\n");
         return -1;
     }
     for(i=0; i<MAX_OPEN_FILE_NUM; i++){
         if(oft[i].status==1 && oft[i].directory_node_no==cur_dir_num){
-            perror("Cannot open file, it's openning\n");
+            //perror("Cannot open file, it's openning\n");
             return -1;
         }
     }
@@ -259,7 +259,7 @@ int fs_close(int fildes){
     char tmp64[64];
 
     if(fildes>=4 || oft[fildes].status==0){
-        perror("Cannot close file, fildes doesn't exist\n");
+        //perror("Cannot close file, fildes doesn't exist\n");
         return -1;
     }
     oft[fildes].status=0;
@@ -297,7 +297,7 @@ int fs_read(int fildes, void *buf, size_t nbyte){
     int file_len,block_id;
     uint8_t tmp[16];
     if(oft[fildes].status==0){
-        perror("Cannot read file, fildes not valid\n");
+        //perror("Cannot read file, fildes not valid\n");
         return -1;
     }
     dir_no=oft[fildes].directory_node_no;
@@ -348,7 +348,7 @@ int fs_write(int fildes, void *buf, size_t nbyte){
     uint8_t tmp[16];
 
     if(oft[fildes].status==0){
-        perror("Cannot write file, fildes not valid\n");
+        //perror("Cannot write file, fildes not valid\n");
         return -1;
     }
 
@@ -371,8 +371,12 @@ int fs_write(int fildes, void *buf, size_t nbyte){
             inode_list[dir_no].data_block_no[i]=get_new_data_block();
         }
     }
-    // update file length in the directory
-    directory_list[dir_no].length=oft[fildes].file_offset+nbyte;
+    // update offset in the oft
+    oft[fildes].file_offset=oft[fildes].file_offset+nbyte;
+    // update length in the directory
+    if(oft[fildes].file_offset>directory_list[dir_no].length){
+        directory_list[dir_no].length=oft[fildes].file_offset;
+    }
 
     while(cur_bytes<nbyte){
         if(cur_offset!=0){
@@ -409,7 +413,7 @@ int fs_write(int fildes, void *buf, size_t nbyte){
 
 int fs_get_filesize(int fildes){
     if(oft[fildes].status==0){
-        perror("Cannot get file size, fildes not valid\n");
+        ////perror("Cannot get file size, fildes not valid\n");
         return -1;
     }
 
@@ -420,13 +424,13 @@ int fs_get_filesize(int fildes){
 int fs_lseek(int fildes, off_t offset){
     int dir_no;
     if(oft[fildes].status==0){
-        perror("Cannot lseek file, fildes not valid\n");
+        //perror("Cannot lseek file, fildes not valid\n");
         return -1;
     }
 
     dir_no=oft[fildes].directory_node_no;
     if(oft[fildes].file_offset+offset>directory_list[dir_no].length || oft[fildes].file_offset+offset<0){
-        perror("Cannot lseek file, offset out of bounds\n");
+        //perror("Cannot lseek file, offset out of bounds\n");
         return -1;
     }
 
@@ -437,13 +441,13 @@ int fs_lseek(int fildes, off_t offset){
 int fs_truncate(int fildes, off_t length){
     int i,dir_no,new_block_num;
     if(oft[fildes].status==0){
-        perror("Cannot truncate file, fildes not valid\n");
+        //perror("Cannot truncate file, fildes not valid\n");
         return -1;
     }
 
     dir_no=oft[fildes].directory_node_no;
     if(length>directory_list[dir_no].length){
-        perror("length larger than file size\n");
+        //perror("length larger than file size\n");
         return -1;
     }
 

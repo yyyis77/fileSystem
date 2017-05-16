@@ -122,7 +122,7 @@ int dismount_fs(char *disk_name){
     for(i=0; i<MAX_FILE_NUM; i++){
         if(directory_list[i].status==1){
             memset(tmp,0,16);
-            memcpy(tmp,&directory_list[i], sizeof(struct directory_node)*MAX_FILE_NUM);
+            memcpy(tmp,&directory_list[i], sizeof(struct directory_node));
             block_write(i+1,tmp);
         }
     }
@@ -134,12 +134,13 @@ int dismount_fs(char *disk_name){
     for(i=0; i<MAX_FILE_NUM; i++){
         memset(tmp64,0,64);
         for (j = 0; j < inode_list[i].data_block_num; j++) {
-            tmp64[inode_list[i].data_block_no[j]]=1;
+            tmp64[j]=inode_list[i].data_block_no[j];
         }
         for(j=0; j<4; j++){
             memcpy(tmp,&tmp64[j*16],16);
             block_write(offset+j,tmp);
         }
+        offset++;
     }
     close_disk();
 }
@@ -281,7 +282,7 @@ int fs_close(int fildes){
     offset=11;
     memset(tmp64,0,64);
     for (j = 0; j < inode_list[i].data_block_num; j++) {
-        tmp64[inode_list[i].data_block_no[j]]=1;
+        tmp64[j]=inode_list[i].data_block_no[j];
     }
     for(i=0; i<4; i++){
         memcpy(tmp,&tmp64[i*16],16);
@@ -371,9 +372,8 @@ int fs_write(int fildes, void *buf, size_t nbyte){
         }
     }
     // update file length in the directory
-    if(oft[fildes].file_offset+nbyte>directory_list[dir_no].length){
-        directory_list[dir_no].length=oft[fildes].file_offset+nbyte;
-    }
+    directory_list[dir_no].length=oft[fildes].file_offset+nbyte;
+
     while(cur_bytes<nbyte){
         if(cur_offset!=0){
             block_read(inode_list[dir_no].data_block_no[block_id], (char*)tmp);
@@ -403,6 +403,7 @@ int fs_write(int fildes, void *buf, size_t nbyte){
             cur_bytes=(int)nbyte;
         }
     }
+
     return (int)nbyte;
 }
 

@@ -263,6 +263,7 @@ int fs_close(int fildes){
         return -1;
     }
     oft[fildes].status=0;
+    file_open_count--;
     // write back directory
     int cur_directory_no=oft[fildes].directory_node_no;
     memset(tmp,0,16);
@@ -343,7 +344,7 @@ int fs_read(int fildes, void *buf, size_t nbyte){
 int fs_write(int fildes, void *buf, size_t nbyte){
     int i,dir_no, cur_offset, free_block_num=0;
     int cur_bytes=0;
-    int file_len,block_id;
+    int block_id=0;
     int enlarge_block_num;
     uint8_t tmp[16];
 
@@ -366,7 +367,8 @@ int fs_write(int fildes, void *buf, size_t nbyte){
     }
 
     if(oft[fildes].file_offset+nbyte>inode_list[dir_no].data_block_num*16){
-        enlarge_block_num=(oft[fildes].file_offset+nbyte)/16-inode_list[dir_no].data_block_num;
+        enlarge_block_num=(oft[fildes].file_offset+nbyte)/16-inode_list[dir_no].data_block_num+1;
+        inode_list[dir_no].data_block_num+=enlarge_block_num;
         for(i=inode_list[dir_no].data_block_num; i<inode_list[dir_no].data_block_num+enlarge_block_num; i++){
             inode_list[dir_no].data_block_no[i]=get_new_data_block();
         }

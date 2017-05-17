@@ -451,9 +451,9 @@ int fs_truncate(int fildes, off_t length){
         return -1;
     }
 
-    directory_list[dir_no].length-=length;
+    directory_list[dir_no].length=length;
     oft[fildes].file_offset=0;
-    new_block_num=(directory_list[dir_no].length-length)/16;
+    new_block_num=length/16;
     if(new_block_num<inode_list[dir_no].data_block_num){
         for(i=inode_list[dir_no].data_block_num; i>new_block_num; i--){
             bytemap[inode_list[dir_no].data_block_no[i-1]]=0;

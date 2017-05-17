@@ -1,5 +1,11 @@
-#ifndef _DISK_H_
-#define _DISK_H_
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+#include <stdint.h>
+#include <memory.h>
+
 
 /***************************************************************************/
 #define DISK_BLOCKS 128       /* number of blocks on the disk              */
@@ -18,5 +24,3 @@ int block_read(int block, char *buf);
 void bitmap_to_bytemap(uint8_t bitmap, uint8_t bytemap[8]);
 void bytemap_to_bitmap(uint8_t bytemap[8], uint8_t bitmap);
 int get_new_data_block();
-
-#endif

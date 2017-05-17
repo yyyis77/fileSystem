@@ -1,10 +1,6 @@
 // Created by Yongyi Yang
 // Creation time: 5/15/17.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <memory.h>
 #include "disk.h"
 
 #define MAX_FILE_NUM 8

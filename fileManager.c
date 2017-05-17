@@ -337,7 +337,7 @@ int fs_read(int fildes, void *buf, size_t nbyte){
             cur_bytes=(int)nbyte;
         }
     }
-    oft[dir_no].file_offset+=nbyte;
+    oft[fildes].file_offset+=nbyte;
     return (int)nbyte;
 }
 
@@ -368,10 +368,10 @@ int fs_write(int fildes, void *buf, size_t nbyte){
 
     if(oft[fildes].file_offset+nbyte>inode_list[dir_no].data_block_num*16){
         enlarge_block_num=(oft[fildes].file_offset+nbyte)/16-inode_list[dir_no].data_block_num+1;
-        inode_list[dir_no].data_block_num+=enlarge_block_num;
         for(i=inode_list[dir_no].data_block_num; i<inode_list[dir_no].data_block_num+enlarge_block_num; i++){
             inode_list[dir_no].data_block_no[i]=get_new_data_block();
         }
+        inode_list[dir_no].data_block_num+=enlarge_block_num;
     }
     // update offset in the oft
     oft[fildes].file_offset=oft[fildes].file_offset+nbyte;
@@ -455,7 +455,7 @@ int fs_truncate(int fildes, off_t length){
 
     directory_list[dir_no].length=length;
     oft[fildes].file_offset=0;
-    new_block_num=length/16;
+    new_block_num=(length+15)/16;
     if(new_block_num<inode_list[dir_no].data_block_num){
         for(i=inode_list[dir_no].data_block_num; i>new_block_num; i--){
             bytemap[inode_list[dir_no].data_block_no[i-1]]=0;
